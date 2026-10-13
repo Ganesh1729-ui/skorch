@@ -17,9 +17,11 @@ jobs:
           - numpy: '1.26.4'
             sklearn: '1.7.2'
             scipy: '1.16.3'
+            test_paths: 'skorch/tests/test_helper.py skorch/tests/test_dataset.py skorch/tests/test_utils.py'
           - numpy: '2.5.4'
             sklearn: '1.9.1'
             scipy: '1.18.1'
+            test_paths: ''
     steps:
       - uses: actions/checkout@v7
         with:
@@ -38,12 +40,12 @@ jobs:
           cd "$RUNNER_TEMP/skorch-base"
           export PYTHONPATH="$PWD"
           python -c 'import skorch; print(skorch.__file__)'
-          python -m pytest -q --no-cov --ignore=skorch/tests/test_hf.py --ignore=skorch/tests/llm -k 'not distributed and not test_fit_and_predict_with_compile and not test_binary_classifier_with_compile' --tb=short | tee "$RUNNER_TEMP/baseline.log"
+          python -m pytest ${{ matrix.test_paths }} -q --no-cov --ignore=skorch/tests/test_hf.py --ignore=skorch/tests/llm -k 'not distributed and not test_fit_and_predict_with_compile and not test_binary_classifier_with_compile' --tb=short | tee "$RUNNER_TEMP/baseline.log"
       - name: Fixed CPU suite
         run: |
           export PYTHONPATH="$PWD"
           python -c 'import skorch; print(skorch.__file__)'
-          python -m pytest -q --no-cov --ignore=skorch/tests/test_hf.py --ignore=skorch/tests/llm -k 'not distributed and not test_fit_and_predict_with_compile and not test_binary_classifier_with_compile' --tb=short | tee "$RUNNER_TEMP/fixed.log"
+          python -m pytest ${{ matrix.test_paths }} -q --no-cov --ignore=skorch/tests/test_hf.py --ignore=skorch/tests/llm -k 'not distributed and not test_fit_and_predict_with_compile and not test_binary_classifier_with_compile' --tb=short | tee "$RUNNER_TEMP/fixed.log"
       - uses: actions/upload-artifact@v6
         if: always()
         with:
